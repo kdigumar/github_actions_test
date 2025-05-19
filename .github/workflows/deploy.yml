@@ -52,7 +52,7 @@ jobs:
           echo "===== Deployment Configuration ====="
           echo "🔄 Environment   : $ENV"
           echo "👤 Username      : $USERNAME"
-          echo "🔐 Password      : $PASSWORD"   # ⚠️ Remove after testing
+          echo "🔐 Password      : ${PASSWORD:0:3}*** (hidden)"   # ⚠️ Remove after testing
           echo "🌐 VM Hosts      : $HOSTS"
           echo "====================================="
 
