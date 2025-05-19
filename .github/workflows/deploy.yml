@@ -43,5 +43,6 @@ jobs:
           IFS=',' read -ra ADDR <<< "$HOSTS"
           for host in "${ADDR[@]}"; do
             echo "Connecting to server: $host"
+            sshpass -p "$PASSWORD" ssh -o StrictHostKeyChecking=no "$USERNAME@$host" "mkdir -p /home/user/path"
             sshpass -p "$PASSWORD" scp -o StrictHostKeyChecking=no ./target/*.jar "$USERNAME@$host:/home/user/app"
           done
