@@ -1,12 +1,12 @@
-# .github/workflows/main.yml
-name: Main Workflow john
-
+---
+name: Main Workflow
 on:
-  push:             # Trigger on all pushes
-    branches: ['**']
-  pull_request:     # Trigger on PRs to main
-    branches: ['main']
-
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - main
 jobs:
   select-environment:
     uses: ./.github/workflows/deploy.yml
