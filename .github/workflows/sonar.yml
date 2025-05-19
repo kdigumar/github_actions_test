@@ -1,14 +1,1 @@
-# .github/workflows/main.yml
-name: Main Workflow
 
-on:
-  push:             # Trigger on all pushes
-    branches: ['**']
-  pull_request:     # Trigger on PRs to main
-    branches: ['main']
-
-jobs:
-  select-environment:
-    uses: ./.github/workflows/deploy.yml
-    with:
-      environment: systest
