@@ -1,3 +1,4 @@
+# .github/workflows/deploy.yml
 name: Deploy Workflow
 
 on:
@@ -9,45 +10,24 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: self-hosted  # Runs directly on your Mac
-
+    runs-on: ubuntu-latest
     env:
       ENV: ${{ inputs.environment }}
 
     steps:
-      - name: Checkout Source Code
+      - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Set Up Java 17
+      - name: Set Up Java
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Build Project with Maven
-        run: |
-          echo "Building project using Maven..."
-          mvn clean package
+      - name: Build with Maven
+        run: mvn clean package
 
       - name: List Target Directory Contents
         run: |
           echo "Listing contents of the ./target directory:"
           ls -lh ./target
-
-      - name: Deploy JAR to Local Directory
-        run: |
-          JAR_FILE=$(find ./target -name "*.jar" | head -n 1)
-          if [[ -z "$JAR_FILE" ]]; then
-            echo "JAR file not found! Build may have failed."
-            exit 1
-          fi
-
-          echo "Found JAR file: $JAR_FILE"
-          DEPLOY_DIR="/Users/welcome"
-          echo "Deploying to: $DEPLOY_DIR"
-
-          mkdir -p "$DEPLOY_DIR"
-          cp "$JAR_FILE" "$DEPLOY_DIR/"
-
-          echo "Deployment complete. Deployed files:"
-          ls -lh "$DEPLOY_DIR"
