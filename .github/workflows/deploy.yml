@@ -43,5 +43,5 @@ jobs:
           IFS=',' read -ra ADDR <<< "$HOSTS"
           for host in "${ADDR[@]}"; do
             echo "Deploying to $host"
-            sshpass -p "$PASSWORD" scp -o StrictHostKeyChecking=no ./target/*.jar "$USERNAME@$host:/desired/remote/path/"
+            sshpass -p "$PASSWORD" scp -o StrictHostKeyChecking=no ./target/*.jar "$USERNAME@$host:/home/user"
           done
