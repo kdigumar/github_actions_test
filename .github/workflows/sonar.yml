@@ -1,37 +1,14 @@
-name: Build and SonarCloud Analysis
+# .github/workflows/main.yml
+name: Main Workflow
 
 on:
-  push:
-    branches:
-      - '**'
-  pull_request:
-    branches:
-      - main
+  push:             # Trigger on all pushes
+    branches: ['**']
+  pull_request:     # Trigger on PRs to main
+    branches: ['main']
 
 jobs:
-  build-and-scan:
-    runs-on: ubuntu-latest
-
-    steps:
-      # Step 1: Check out the code
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      # Step 2: Set up JDK
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: 17
-          distribution: 'temurin'
-
-      # Step 3: Build the Maven project
-      - name: Build with Maven
-        run: mvn clean install
-
-      # Step 4: SonarCloud Scan
-      - name: SonarCloud Scan
-        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.merged != true }} # Avoid duplicate scan after merge
-        env:
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn sonar:sonar -Dsonar.projectKey=kdigumar_github_actions_test -Dsonar.organization=kdigumar
+  select-environment:
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: systest
