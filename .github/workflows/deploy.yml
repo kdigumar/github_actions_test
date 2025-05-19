@@ -1,33 +1,46 @@
-# .github/workflows/deploy.yml
-name: Deploy Workflow
+name: Build and Deploy
 
 on:
-  workflow_call:
+  workflow_dispatch:
     inputs:
       environment:
+        description: 'Deployment environment'
         required: true
-        type: string
+        default: 'systest'
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
     env:
-      ENV: ${{ inputs.environment }}
+      APP_NAME: ${{ vars.APP_NAME }}
+      ENV: ${{ github.event.inputs.environment }}
 
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set Up Java
+      - name: Set up Java 17
         uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: temurin
+          java-version: 17
 
       - name: Build with Maven
         run: mvn clean package
 
-      - name: List Target Directory Contents
+      - name: List target directory before rename
+        run: ls -lh ./target
+
+      - name: Rename JAR to $APP_NAME.jar
         run: |
-          echo "Listing contents of the ./target directory:"
-          ls -lh ./target
+          JAR_FILE=$(find ./target -type f -name "*.jar" ! -name "*.original" | head -n 1)
+          if [[ -z "$JAR_FILE" ]]; then
+            echo "No JAR file found!"
+            exit 1
+          fi
+          echo "Renaming $JAR_FILE to ./target/${APP_NAME}.jar"
+          cp "$JAR_FILE" "./target/${APP_NAME}.jar"
+
+      - name: List target directory after rename
+        run: ls -lh ./target
