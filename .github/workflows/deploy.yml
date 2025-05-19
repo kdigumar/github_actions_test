@@ -1,4 +1,3 @@
-# .github/workflows/deploy.yml
 name: Deploy Workflow
 
 on:
@@ -10,39 +9,45 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted  # Runs directly on your Mac
+
     env:
       ENV: ${{ inputs.environment }}
 
     steps:
-      - name: Checkout Code
+      - name: Checkout Source Code
         uses: actions/checkout@v3
 
-      - name: Set Up Java
+      - name: Set Up Java 17
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Build with Maven
-        run: mvn clean package
-
-      - name: Get Host List
-        id: get-hosts
+      - name: Build Project with Maven
         run: |
-          if [[ "${{ env.ENV }}" == "systest" ]]; then
-            echo "hosts=${{ secrets.SYSTEST_VM_HOSTS }}" >> $GITHUB_OUTPUT
+          echo "Building project using Maven..."
+          mvn clean package
+
+      - name: List Target Directory Contents
+        run: |
+          echo "Listing contents of the ./target directory:"
+          ls -lh ./target
+
+      - name: Deploy JAR to Local Directory
+        run: |
+          JAR_FILE=$(find ./target -name "*.jar" | head -n 1)
+          if [[ -z "$JAR_FILE" ]]; then
+            echo "JAR file not found! Build may have failed."
+            exit 1
           fi
 
-      - name: Upload JAR to VMs
-        env:
-          HOSTS: ${{ steps.get-hosts.outputs.hosts }}
-          USERNAME: ${{ secrets.SYSTEST_VM_USERNAME }}
-          PASSWORD: ${{ secrets.SYSTEST_VM_PASSWORD }}
-        run: |
-          IFS=',' read -ra ADDR <<< "$HOSTS"
-          for host in "${ADDR[@]}"; do
-            echo "Connecting to server: $host"
-            sshpass -p "$PASSWORD" ssh -o StrictHostKeyChecking=no "$USERNAME@$host" "mkdir -p /home/user/path"
-            sshpass -p "$PASSWORD" scp -o StrictHostKeyChecking=no ./target/*.jar "$USERNAME@$host:/home/user/app"
-          done
+          echo "Found JAR file: $JAR_FILE"
+          DEPLOY_DIR="/Users/welcome"
+          echo "Deploying to: $DEPLOY_DIR"
+
+          mkdir -p "$DEPLOY_DIR"
+          cp "$JAR_FILE" "$DEPLOY_DIR/"
+
+          echo "Deployment complete. Deployed files:"
+          ls -lh "$DEPLOY_DIR"
