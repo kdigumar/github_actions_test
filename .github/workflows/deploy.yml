@@ -16,74 +16,73 @@ jobs:
       ENV: ${{ inputs.environment }}
 
     steps:
-      - name: 🧾 Checkout Code
+      - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: ☕ Set Up Java
+      - name: Set Up Java
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: 🏗️ Build with Maven
+      - name: Build with Maven
         run: |
-          echo "🔧 Building JAR for environment: $ENV"
+          echo "Building JAR for environment: $ENV"
           mvn clean package
-          echo "✅ Maven build complete. JAR is in ./target"
+          echo "Maven build complete. JAR is in ./target"
 
-      - name: 📡 Get Host List
+      - name: Get Host List
         id: get-hosts
         run: |
-          echo "🌐 Retrieving VM host list for environment: $ENV"
+          echo "Retrieving VM host list for environment: $ENV"
           if [[ "$ENV" == "systest" ]]; then
             echo "hosts=${{ secrets.SYSTEST_VM_HOSTS }}" >> $GITHUB_OUTPUT
-            echo "✅ Hosts loaded for systest"
+            echo "Hosts loaded for systest"
           else
-            echo "❌ Environment '$ENV' not recognized!"
+            echo "Environment '$ENV' not recognized!"
             exit 1
           fi
 
-      - name: 🚀 Deploy JAR to VMs
+      - name: Deploy JAR to VMs
         env:
           HOSTS: ${{ steps.get-hosts.outputs.hosts }}
           USERNAME: ${{ secrets.SYSTEST_VM_USERNAME }}
           PASSWORD: ${{ secrets.SYSTEST_VM_PASSWORD }}
         run: |
           echo "===== Deployment Configuration ====="
-          echo "🔄 Environment   : $ENV"
-          echo "👤 Username      : $USERNAME"
-          echo "🔐 Password      : ${PASSWORD:0:3}*** (hidden)"   # ⚠️ Remove after testing
-          echo "🌐 VM Hosts      : $HOSTS"
+          echo "Environment   : $ENV"
+          echo "Username      : $USERNAME"
+          echo "VM Hosts      : $HOSTS"
           echo "====================================="
 
-          echo "📦 Starting deployment to VMs..."
+          echo "Starting deployment to VMs..."
           IFS=',' read -ra ADDR <<< "$HOSTS"
 
           for host in "${ADDR[@]}"; do
-            echo "➡️  Attempting connection to $host"
+            echo "Attempting connection to $host"
 
             # Optional: check connectivity
             ping -c 2 "$host" > /dev/null 2>&1
             if [[ $? -ne 0 ]]; then
-              echo "❌ Cannot reach $host — skipping"
+              echo "Cannot reach $host — skipping"
               continue
             fi
-            echo "✅ $host is reachable"
+            echo "$host is reachable"
 
-            echo "➡️  Connecting to $host with user: $USERNAME"
-            sshpass -p "$PASSWORD" ssh -o StrictHostKeyChecking=no "$USERNAME@$host" "echo '🔐 Connected to $host as $USERNAME'" || {
-              echo "❌ SSH connection to $host failed"
+            echo "Connecting to $host with user: $USERNAME"
+            sshpass -p "$PASSWORD" ssh -o StrictHostKeyChecking=no "$USERNAME@$host" "echo 'Connected to $host as $USERNAME'" || {
+              echo "SSH connection to $host failed"
               continue
             }
 
-            echo "🚀 Uploading JAR to $host:/desired/remote/path/"
+            echo "Uploading JAR to $host:/home/user/app"
             sshpass -p "$PASSWORD" scp -o StrictHostKeyChecking=no ./target/*.jar "$USERNAME@$host:/home/user/app
               continue
             }
 
-            echo "✅ Deployment completed on $host"
+            echo "Deployment completed on $host"
           done
 
-      - name: ✅ Deployment Done
+      - name: Deployment Done
         run: |
-          echo "🎉 All reachable hosts processed for environment: $ENV"
+          echo "All reachable hosts processed for environment: $ENV"
