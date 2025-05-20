@@ -63,7 +63,7 @@ jobs:
 
       - name: Start app and check PID on EC2
         run: |
-          printf '%b' "$EC2_KEY" > private_key.pem
+          echo "$EC2_KEY" > private_key.pem
           chmod 600 private_key.pem
           
           IFS=',' read -ra HOSTS <<< "$SYSTEST_IPS"
