@@ -59,3 +59,19 @@ jobs:
         run: |
           echo "Contents of ./target after rename:"
           ls -lh ./target
+
+      - name: Deploy JAR to EC2 instances
+        run: |
+          echo "$EC2_KEY" > private_key.pem
+          chmod 600 private_key.pem
+
+          IFS=',' read -ra HOSTS <<< "$SYSTEST_IPS"
+
+          for HOST in "${HOSTS[@]}"; do
+            echo "Deploying to $HOST"
+            scp -o StrictHostKeyChecking=no -i private_key.pem "./target/${APP_NAME}.jar" "${EC2_USERNAME}@${HOST}:/opt/apps/${APP_NAME}.jar"
+          done
+        env:
+          SYSTEST_IPS: ${{ secrets.SYSTEST_IPS }}
+          EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
+          EC2_KEY: ${{ secrets.EC2_KEY }}
