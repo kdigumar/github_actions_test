@@ -13,3 +13,7 @@ jobs:
     with:
       environment: systest
       app_name: myApp
+    secrets:
+      SYSTEST_IPS: ${{ secrets.SYSTEST_IPS }}
+      EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
+      EC2_KEY: ${{ secrets.EC2_KEY }}
