@@ -87,4 +87,5 @@ jobs:
             sleep 2
             PID=\$(pgrep -f '${APP_NAME}.jar')
             echo "App started with PID: \$PID"
-          EOF done
+          EOF 
+          done
