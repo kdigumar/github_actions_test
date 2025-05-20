@@ -75,3 +75,21 @@ jobs:
             echo "Deploying to $HOST"
             scp -o StrictHostKeyChecking=no -i private_key.pem "./target/${APP_NAME}.jar" "${EC2_USERNAME}@${HOST}:/opt/apps/${APP_NAME}.jar"
           done
+
+      - name: Start app and check PID on EC2
+        run: |
+          IFS=',' read -ra HOSTS <<< "$SYSTEST_IPS"
+
+          for HOST in "${HOSTS[@]}"; do
+            echo "Starting app on $HOST"
+            ssh -o StrictHostKeyChecking=no -i private_key.pem ${EC2_USERNAME}@${HOST} << EOF
+              pkill -f '${APP_NAME}.jar' || true
+              nohup java -jar /opt/apps/${APP_NAME}.jar > /opt/apps/${APP_NAME}.log 2>&1 &
+              sleep 2
+              PID=\$(pgrep -f '${APP_NAME}.jar')
+              echo "App started with PID: \$PID"
+EOF
+          done
+        env:
+          SYSTEST_IPS: ${{ secrets.SYSTEST_IPS }}
+          EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
