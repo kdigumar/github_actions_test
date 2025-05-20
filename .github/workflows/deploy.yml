@@ -1,4 +1,4 @@
-name: Build and Deploy
+ name: Build and Deploy
 on:
   workflow_call:
     inputs:
@@ -63,9 +63,12 @@ jobs:
 
       - name: Start app and check PID on EC2
         run: |
+          printf '%b' "$EC2_KEY" > private_key.pem
+          chmod 600 private_key.pem
+          
           IFS=',' read -ra HOSTS <<< "$SYSTEST_IPS"
           for HOST in "${HOSTS[@]}"; do
-            echo "Starting app on $HOST"
+            echo "Starting app on $HOST "
             ssh -o StrictHostKeyChecking=no -i private_key.pem "${EC2_USERNAME}@${HOST}" "\
               pkill -f '${APP_NAME}.jar' || true && \
               nohup java -jar /opt/apps/${APP_NAME}.jar > /opt/apps/${APP_NAME}.log 2>&1 & \
