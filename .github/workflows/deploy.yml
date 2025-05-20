@@ -20,6 +20,7 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
     env:
       APP_NAME: ${{ inputs.APP_NAME }}
       ENV: ${{ inputs.environment }}
