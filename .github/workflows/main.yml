@@ -12,3 +12,4 @@ jobs:
     uses: ./.github/workflows/deploy.yml
     with:
       environment: systest
+      app_name: myApp
